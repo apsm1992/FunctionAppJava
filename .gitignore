@@ -21,5 +21,8 @@ Thumbs.db
 
 # Azurite
 __azurite_db_*.json
+__blobstorage__/
+_queuestorage__/
+
 # Local settings
 local.settings.json
