@@ -21,7 +21,7 @@ public class MonitorWebAppAvailability {
         @TimerTrigger(name = "monitorTrigger", schedule = "%MONITOR_SCHEDULE%") String timerInfo,
         final ExecutionContext context
     ) {
-        context.getLogger().info("▶ Ejecutando MonitorWebAppAvailability: " + Instant.now());
+        context.getLogger().info("Ejecutando MonitorWebAppAvailability: " + Instant.now());
 
         // Leer variables por región
         String endpointsUsJson = System.getenv("ENDPOINTS_US");
@@ -33,7 +33,7 @@ public class MonitorWebAppAvailability {
         allEndpoints.addAll(parseJsonEndpoints(endpointsEuJson, "ENDPOINTS_EU", context));
 
         if (allEndpoints.isEmpty()) {
-            context.getLogger().warning("❌ No se encontraron endpoints válidos en ninguna región.");
+            context.getLogger().warning("No se encontraron endpoints válidos en ninguna región.");
             return;
         }
 
@@ -46,7 +46,7 @@ public class MonitorWebAppAvailability {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
                         .timeout(java.time.Duration.ofSeconds(5))
-                        .GET()
+                        .GET() // Método GET explícito
                         .build();
 
                 HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
@@ -62,7 +62,7 @@ public class MonitorWebAppAvailability {
                 context.getLogger().info("[LOG] " + new Gson().toJson(log));
 
             } catch (IOException | InterruptedException e) {
-                context.getLogger().warning("⚠ Error al consultar " + url + ": " + e.getMessage());
+                context.getLogger().warning("Error al consultar " + url + ": " + e.getMessage());
             }
         }
     }
@@ -74,25 +74,24 @@ public class MonitorWebAppAvailability {
         List<String> urls = new ArrayList<>();
 
         if (json == null || json.isBlank()) {
-            context.getLogger().warning("⚠ Variable " + envVarName + " no definida o vacía.");
+            context.getLogger().warning("Variable " + envVarName + " no definida o vacía.");
             return urls;
         }
 
         try {
             urls = new Gson().fromJson(json, new TypeToken<List<String>>() {}.getType());
         } catch (Exception e) {
-            context.getLogger().warning("❌ Variable " + envVarName + " no tiene formato JSON válido: " + e.getMessage());
+            context.getLogger().warning("Variable " + envVarName + " no tiene formato JSON válido: " + e.getMessage());
             return new ArrayList<>();
         }
 
-        // Validar URLs
         List<String> validUrls = new ArrayList<>();
         for (String url : urls) {
             try {
-                new URI(url); // validación básica
+                new URI(url); // Validación básica de URL
                 validUrls.add(url);
             } catch (Exception e) {
-                context.getLogger().warning("⚠ URL inválida en " + envVarName + ": " + url);
+                context.getLogger().warning("URL inválida en " + envVarName + ": " + url);
             }
         }
 
