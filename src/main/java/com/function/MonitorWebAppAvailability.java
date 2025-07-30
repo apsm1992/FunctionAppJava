@@ -18,23 +18,28 @@ public class MonitorWebAppAvailability {
 
     @FunctionName("MonitorWebAppAvailability")
     public void run(
-       // @TimerTrigger(name = "monitorTrigger", schedule = "0 */5 * * * *") String timerInfo,
-          @TimerTrigger(name = "monitorTrigger", schedule = "%MONITOR_SCHEDULE%") String timerInfo,
+        @TimerTrigger(name = "monitorTrigger", schedule = "%MONITOR_SCHEDULE%") String timerInfo,
         final ExecutionContext context
     ) {
         context.getLogger().info("▶ Ejecutando MonitorWebAppAvailability: " + Instant.now());
 
-        String endpointsJson = System.getenv("ENDPOINTS");
+        // Leer variables por región
+        String endpointsUsJson = System.getenv("ENDPOINTS_US");
+        String endpointsEuJson = System.getenv("ENDPOINTS_EU");
 
-        if (endpointsJson == null || endpointsJson.isBlank()) {
-            context.getLogger().warning("Variable ENDPOINTS no definida o vacía.");
+        List<String> allEndpoints = new ArrayList<>();
+
+        allEndpoints.addAll(parseJsonEndpoints(endpointsUsJson, "ENDPOINTS_US", context));
+        allEndpoints.addAll(parseJsonEndpoints(endpointsEuJson, "ENDPOINTS_EU", context));
+
+        if (allEndpoints.isEmpty()) {
+            context.getLogger().warning("❌ No se encontraron endpoints válidos en ninguna región.");
             return;
         }
 
-        List<String> urls = new Gson().fromJson(endpointsJson, new TypeToken<List<String>>(){}.getType());
         HttpClient client = HttpClient.newHttpClient();
 
-        for (String url : urls) {
+        for (String url : allEndpoints) {
             try {
                 long start = System.currentTimeMillis();
 
@@ -57,8 +62,40 @@ public class MonitorWebAppAvailability {
                 context.getLogger().info("[LOG] " + new Gson().toJson(log));
 
             } catch (IOException | InterruptedException e) {
-                context.getLogger().warning("Error al consultar " + url + ": " + e.getMessage());
+                context.getLogger().warning("⚠ Error al consultar " + url + ": " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Valida y parsea una variable JSON de endpoints.
+     */
+    private List<String> parseJsonEndpoints(String json, String envVarName, ExecutionContext context) {
+        List<String> urls = new ArrayList<>();
+
+        if (json == null || json.isBlank()) {
+            context.getLogger().warning("⚠ Variable " + envVarName + " no definida o vacía.");
+            return urls;
+        }
+
+        try {
+            urls = new Gson().fromJson(json, new TypeToken<List<String>>() {}.getType());
+        } catch (Exception e) {
+            context.getLogger().warning("❌ Variable " + envVarName + " no tiene formato JSON válido: " + e.getMessage());
+            return new ArrayList<>();
+        }
+
+        // Validar URLs
+        List<String> validUrls = new ArrayList<>();
+        for (String url : urls) {
+            try {
+                new URI(url); // validación básica
+                validUrls.add(url);
+            } catch (Exception e) {
+                context.getLogger().warning("⚠ URL inválida en " + envVarName + ": " + url);
+            }
+        }
+
+        return validUrls;
     }
 }
