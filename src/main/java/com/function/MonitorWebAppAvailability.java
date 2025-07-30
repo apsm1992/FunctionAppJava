@@ -18,7 +18,7 @@ public class MonitorWebAppAvailability {
 
     @FunctionName("MonitorWebAppAvailability")
     public void run(
-        @TimerTrigger(name = "monitorTrigger", schedule = "0 * * * * *") String timerInfo,
+        @TimerTrigger(name = "monitorTrigger", schedule = "%MONITOR_SCHEDULE%") String timerInfo,
         final ExecutionContext context
     ) {
         context.getLogger().info("▶ Ejecutando MonitorWebAppAvailability: " + Instant.now());
