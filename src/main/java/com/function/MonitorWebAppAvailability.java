@@ -142,4 +142,9 @@ public class MonitorWebAppAvailability {
             context.getLogger().warning("Error simulando envío a Grail: " + e.getMessage());
         }
     }
+
+    // Método público adicional para permitir pruebas unitarias (Card #8)
+    public Map<String, Object> testCheckEndpointWithClient(String url, HttpClient client, ExecutionContext context) {
+        return checkEndpointWithRetries(url, client, context);
+    }
 }
