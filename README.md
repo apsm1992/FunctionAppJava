@@ -104,6 +104,5 @@ FunctionAppJava/
 ## 👤 Autor
 
 - **apsm1992**  
-- Proyecto desarrollado como parte del equipo **Digital Operations Center - CEMEX**
 
 ---
