@@ -6,4 +6,5 @@ jdk:
 install: true
 
 script:
-  - mvn clean package
+  - mvn clean test
+  - mvn package
