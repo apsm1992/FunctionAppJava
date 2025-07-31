@@ -18,6 +18,7 @@ public class MonitorWebAppAvailability {
 
     private static final String MOCK_GRAIL_ENDPOINT = "https://mock.grail.endpoint/api/logs";
     private static final String MOCK_AUTH_TOKEN = "Bearer MOCK_TOKEN_12345";
+    private static final int MAX_RETRIES = 3;
 
     @FunctionName("MonitorWebAppAvailability")
     public void run(
@@ -42,6 +43,21 @@ public class MonitorWebAppAvailability {
         List<Map<String, Object>> logs = new ArrayList<>();
 
         for (String url : allEndpoints) {
+            Map<String, Object> log = checkEndpointWithRetries(url, client, context);
+            if (log != null) {
+                logs.add(log);
+            }
+        }
+
+        // Simular envío de logs a Grail
+        if (!logs.isEmpty()) {
+            sendLogsToMockGrail(client, logs, context);
+        }
+    }
+
+    private Map<String, Object> checkEndpointWithRetries(String url, HttpClient client, ExecutionContext context) {
+        int attempt = 0;
+        while (attempt < MAX_RETRIES) {
             try {
                 long start = System.currentTimeMillis();
 
@@ -61,17 +77,23 @@ public class MonitorWebAppAvailability {
                 log.put("responseTimeMs", duration);
                 log.put("source", "MonitorWebAppAvailability");
 
-                logs.add(log);
-
+                return log;
             } catch (IOException | InterruptedException e) {
-                context.getLogger().warning("Error al consultar " + url + ": " + e.getMessage());
+                context.getLogger().warning("Intento " + (attempt + 1) + " fallido para " + url + ": " + e.getMessage());
+            }
+
+            attempt++;
+            try {
+                long backoff = (long) Math.pow(2, attempt);
+                Thread.sleep(backoff * 1000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return null;
             }
         }
 
-        // Simular envío de logs a Grail
-        if (!logs.isEmpty()) {
-            sendLogsToMockGrail(client, logs, context);
-        }
+        context.getLogger().severe("Todos los intentos fallaron para " + url);
+        return null;
     }
 
     private List<String> parseJsonEndpoints(String json, String envVarName, ExecutionContext context) {
