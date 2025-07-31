@@ -1,0 +1,9 @@
+language: java
+
+jdk:
+  - openjdk17
+
+install: true
+
+script:
+  - mvn clean package
