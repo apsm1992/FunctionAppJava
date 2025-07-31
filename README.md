@@ -6,13 +6,13 @@ Este proyecto implementa una Azure Function en Java para monitorear la disponibi
 
 ## 📐 Arquitectura General
 
+![Flujo](assets/Arquitectura.png)
+
 ```
 [Usuario/Cliente] ──► [Azure Function: MonitorWebAppAvailability]
                           └───► Verifica HTTP status de endpoints
                           └───► Calcula tiempos de respuesta
                           └───► Envía logs a [Grail API]
-
-![Flujo](assets/Arquitectura.png)
 
 ```
 
