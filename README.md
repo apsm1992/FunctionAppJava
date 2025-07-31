@@ -11,6 +11,9 @@ Este proyecto implementa una Azure Function en Java para monitorear la disponibi
                           └───► Verifica HTTP status de endpoints
                           └───► Calcula tiempos de respuesta
                           └───► Envía logs a [Grail API]
+
+![Flujo](assets/Arquitectura.png)
+
 ```
 
 - Tecnología principal: **Azure Functions en Java (Java 17)**
