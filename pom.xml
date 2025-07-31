@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.function</groupId>
@@ -14,28 +15,11 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
-        <azure.functions.maven.plugin.version>1.37.0</azure.functions.maven.plugin.version>
+        <!-- Downgrade para evitar error de dependencia rota -->
+        <azure.functions.maven.plugin.version>1.16.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>3.1.0</azure.functions.java.library.version>
         <functionAppName>HealthCheckLogger-1753849423499</functionAppName>
     </properties>
-
-    <!-- Repositorios adicionales -->
-    <repositories>
-        <repository>
-            <id>azure-sdk</id>
-            <name>Azure SDK repository</name>
-            <url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/azure-sdk-for-java/maven/v1</url>
-        </repository>
-        <repository>
-            <id>azure-sdk-public</id>
-            <name>Azure SDK Public Repository</name>
-            <url>https://maven.pkg.azure.com/azure-sdk/public/</url>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
@@ -43,6 +27,7 @@
             <artifactId>azure-functions-java-library</artifactId>
             <version>${azure.functions.java.library.version}</version>
         </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -77,6 +62,7 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>com.microsoft.azure</groupId>
                 <artifactId>azure-functions-maven-plugin</artifactId>
@@ -106,6 +92,8 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Limpieza de carpeta obj para entornos .NET -->
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.1.0</version>
