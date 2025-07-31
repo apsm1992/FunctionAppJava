@@ -12,12 +12,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * Azure Function para monitorear disponibilidad de endpoints y enviar logs a Grail.
+ * Azure Function para monitorear disponibilidad de endpoints y simular el envío de logs a Grail.
  */
 public class MonitorWebAppAvailability {
 
-    private static final String GRAIL_ENDPOINT = System.getenv("GRAIL_ENDPOINT");
-    private static final String GRAIL_AUTH_TOKEN = System.getenv("GRAIL_AUTH_TOKEN");
+    private static final String MOCK_GRAIL_ENDPOINT = "https://mock.grail.endpoint/api/logs";
+    private static final String MOCK_AUTH_TOKEN = "Bearer MOCK_TOKEN_12345";
     private static final int MAX_RETRIES = 3;
 
     @FunctionName("MonitorWebAppAvailability")
@@ -49,8 +49,9 @@ public class MonitorWebAppAvailability {
             }
         }
 
+        // Simular envío de logs a Grail
         if (!logs.isEmpty()) {
-            sendLogsToGrail(client, logs, context);
+            sendLogsToMockGrail(client, logs, context);
         }
     }
 
@@ -75,10 +76,8 @@ public class MonitorWebAppAvailability {
                 log.put("status", response.statusCode());
                 log.put("responseTimeMs", duration);
                 log.put("source", "MonitorWebAppAvailability");
-                log.put("level", response.statusCode() >= 200 && response.statusCode() < 400 ? "INFO" : "ERROR");
 
                 return log;
-
             } catch (IOException | InterruptedException e) {
                 context.getLogger().warning("Intento " + (attempt + 1) + " fallido para " + url + ": " + e.getMessage());
             }
@@ -125,31 +124,26 @@ public class MonitorWebAppAvailability {
         return validUrls;
     }
 
-    private void sendLogsToGrail(HttpClient client, List<Map<String, Object>> logs, ExecutionContext context) {
-        if (GRAIL_ENDPOINT == null || GRAIL_AUTH_TOKEN == null) {
-            context.getLogger().severe("GRAIL_ENDPOINT o GRAIL_AUTH_TOKEN no están definidos en el entorno.");
-            return;
-        }
-
+    private void sendLogsToMockGrail(HttpClient client, List<Map<String, Object>> logs, ExecutionContext context) {
         String jsonPayload = new Gson().toJson(logs);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(GRAIL_ENDPOINT))
+                .uri(URI.create(MOCK_GRAIL_ENDPOINT))
                 .timeout(java.time.Duration.ofSeconds(5))
                 .header("Content-Type", "application/json")
-                .header("Authorization", GRAIL_AUTH_TOKEN)
+                .header("Authorization", MOCK_AUTH_TOKEN)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                 .build();
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            context.getLogger().info("Envío real a Grail completado. Código de respuesta: " + response.statusCode());
+            context.getLogger().info("Simulacion de envío a Grail. Codigo de respuesta: " + response.statusCode());
         } catch (IOException | InterruptedException e) {
-            context.getLogger().severe("Error al enviar logs reales a Grail: " + e.getMessage());
+            context.getLogger().warning("Error simulando envío a Grail: " + e.getMessage());
         }
     }
 
-    // Método público auxiliar para pruebas (Card #8)
+    // Método público adicional para permitir pruebas unitarias (Card #8)
     public Map<String, Object> testCheckEndpointWithClient(String url, HttpClient client, ExecutionContext context) {
         return checkEndpointWithRetries(url, client, context);
     }
