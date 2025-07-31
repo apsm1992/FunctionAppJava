@@ -35,7 +35,7 @@ public class MonitorWebAppAvailability {
         allEndpoints.addAll(parseJsonEndpoints(endpointsEuJson, "ENDPOINTS_EU", context));
 
         if (allEndpoints.isEmpty()) {
-            context.getLogger().warning("No se encontraron endpoints válidos en ninguna región.");
+            context.getLogger().warning("No se encontraron endpoints válidos en ninguna region.");
             return;
         }
 
