@@ -12,7 +12,7 @@ Esta función requiere las siguientes variables de entorno configuradas en **Azu
 | `GRAIL_ENDPOINT`     | string    | URL real del endpoint de Grail para envío de logs                            |
 | `GRAIL_AUTH_TOKEN`   | string    | Token Bearer de autenticación para envío a Grail                             |
 
---
+---
 
 ## Ejemplo de configuración:
 
@@ -20,7 +20,7 @@ Esta función requiere las siguientes variables de entorno configuradas en **Azu
 ENDPOINTS_US = ["https://us-api1.com/health", "https://us-api2.com/ping"]
 ENDPOINTS_EU = ["https://eu-api1.com/health"]
 GRAIL_ENDPOINT = https://api.grail.company.com/v1/logs
-GRAIL_AUTH_TOKEN = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+GRAIL_AUTH_TOKEN = Api-Token XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 MONITOR_SCHEDULE = 0 */5 * * * *
 ```
 
