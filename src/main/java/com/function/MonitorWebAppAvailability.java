@@ -115,7 +115,7 @@ public class MonitorWebAppAvailability {
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            context.getLogger().info("Simulacion de envío a Grail. Código de respuesta: " + response.statusCode());
+            context.getLogger().info("Simulacion de envío a Grail. Codigo de respuesta: " + response.statusCode());
         } catch (IOException | InterruptedException e) {
             context.getLogger().warning("Error simulando envío a Grail: " + e.getMessage());
         }
