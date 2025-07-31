@@ -12,9 +12,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * Azure Function para monitorear disponibilidad de endpoints y loguear los resultados.
+ * Azure Function para monitorear disponibilidad de endpoints y simular el envío de logs a Grail.
  */
 public class MonitorWebAppAvailability {
+
+    private static final String MOCK_GRAIL_ENDPOINT = "https://mock.grail.endpoint/api/logs";
+    private static final String MOCK_AUTH_TOKEN = "Bearer MOCK_TOKEN_12345";
 
     @FunctionName("MonitorWebAppAvailability")
     public void run(
@@ -23,12 +26,10 @@ public class MonitorWebAppAvailability {
     ) {
         context.getLogger().info("Ejecutando MonitorWebAppAvailability: " + Instant.now());
 
-        // Leer variables por región
         String endpointsUsJson = System.getenv("ENDPOINTS_US");
         String endpointsEuJson = System.getenv("ENDPOINTS_EU");
 
         List<String> allEndpoints = new ArrayList<>();
-
         allEndpoints.addAll(parseJsonEndpoints(endpointsUsJson, "ENDPOINTS_US", context));
         allEndpoints.addAll(parseJsonEndpoints(endpointsEuJson, "ENDPOINTS_EU", context));
 
@@ -38,6 +39,7 @@ public class MonitorWebAppAvailability {
         }
 
         HttpClient client = HttpClient.newHttpClient();
+        List<Map<String, Object>> logs = new ArrayList<>();
 
         for (String url : allEndpoints) {
             try {
@@ -46,7 +48,7 @@ public class MonitorWebAppAvailability {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(url))
                         .timeout(java.time.Duration.ofSeconds(5))
-                        .GET() // Método GET explícito
+                        .GET()
                         .build();
 
                 HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
@@ -59,17 +61,19 @@ public class MonitorWebAppAvailability {
                 log.put("responseTimeMs", duration);
                 log.put("source", "MonitorWebAppAvailability");
 
-                context.getLogger().info("[LOG] " + new Gson().toJson(log));
+                logs.add(log);
 
             } catch (IOException | InterruptedException e) {
                 context.getLogger().warning("Error al consultar " + url + ": " + e.getMessage());
             }
         }
+
+        // Simular envío de logs a Grail
+        if (!logs.isEmpty()) {
+            sendLogsToMockGrail(client, logs, context);
+        }
     }
 
-    /**
-     * Valida y parsea una variable JSON de endpoints.
-     */
     private List<String> parseJsonEndpoints(String json, String envVarName, ExecutionContext context) {
         List<String> urls = new ArrayList<>();
 
@@ -88,7 +92,7 @@ public class MonitorWebAppAvailability {
         List<String> validUrls = new ArrayList<>();
         for (String url : urls) {
             try {
-                new URI(url); // Validación básica de URL
+                new URI(url);
                 validUrls.add(url);
             } catch (Exception e) {
                 context.getLogger().warning("URL inválida en " + envVarName + ": " + url);
@@ -96,5 +100,24 @@ public class MonitorWebAppAvailability {
         }
 
         return validUrls;
+    }
+
+    private void sendLogsToMockGrail(HttpClient client, List<Map<String, Object>> logs, ExecutionContext context) {
+        String jsonPayload = new Gson().toJson(logs);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(MOCK_GRAIL_ENDPOINT))
+                .timeout(java.time.Duration.ofSeconds(5))
+                .header("Content-Type", "application/json")
+                .header("Authorization", MOCK_AUTH_TOKEN)
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .build();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            context.getLogger().info("Simulación de envío a Grail. Código de respuesta: " + response.statusCode());
+        } catch (IOException | InterruptedException e) {
+            context.getLogger().warning("Error simulando envío a Grail: " + e.getMessage());
+        }
     }
 }
