@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.function</groupId>
@@ -62,23 +64,11 @@
                 <artifactId>azure-functions-maven-plugin</artifactId>
                 <version>${azure.functions.maven.plugin.version}</version>
                 <configuration>
-                    <!-- function app name -->
                     <appName>${functionAppName}</appName>
-                    <!-- function app resource group -->
                     <resourceGroup>java-functions-group</resourceGroup>
-                    <!-- function app region-->
-                    <!-- refers https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Functions:-Configuration-Details#supported-regions for all valid values -->
                     <region>westus</region>
-                    <!-- function app service plan name -->
                     <appServicePlanName>java-functions-app-service-plan</appServicePlanName>
-                    <!-- function pricingTier, default to be consumption if not specified -->
-                    <!-- refers https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Functions:-Configuration-Details#supported-pricing-tiers for all valid values -->
-                    <!-- <pricingTier></pricingTier> -->
-                    <!-- Whether to disable application insights, default is false -->
-                    <!-- refers https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Functions:-Configuration-Details for all valid configurations for application insights-->
-                    <!-- <disableAppInsights></disableAppInsights> -->
                     <runtime>
-                        <!-- runtime os, could be windows, linux or docker-->
                         <os>windows</os>
                         <javaVersion>17</javaVersion>
                     </runtime>
@@ -112,4 +102,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>azure-sdk</id>
+            <name>Azure SDK repository</name>
+            <url>https://pkgs.dev.azure.com/azure-public/vside/_packaging/azure-sdk-for-java/maven/v1</url>
+        </repository>
+    </repositories>
 </project>
